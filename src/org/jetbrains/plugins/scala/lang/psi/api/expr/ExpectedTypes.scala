@@ -200,9 +200,15 @@ private[expr] object ExpectedTypes {
           case _ => expr
         }
         val op = infix.operation
-        var tps =
-          if (!withResolvedFunction) mapResolves(op.shapeResolve, op.shapeMultiType)
-          else mapResolves(op.multiResolve(false), op.multiType)
+        var tps = infix.typeArgs match {
+          case Some(_) =>
+            if (!withResolvedFunction) mapResolves(op.shapeResolve, infix.shapeMultiType)
+            else mapResolves(op.multiResolve(false), infix.multiType)
+          case _ =>
+            if (!withResolvedFunction) mapResolves(op.shapeResolve, op.shapeMultiType)
+            else mapResolves(op.multiResolve(false), op.multiType)
+        }
+
         tps = tps.map { case (tp, isDynamicNamed) =>
           (infix.updateAccordingToExpectedType(tp), isDynamicNamed)
         }

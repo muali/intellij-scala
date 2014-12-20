@@ -6,6 +6,9 @@ package expr
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.lang.parser.util.ParserUtils
+import org.jetbrains.plugins.scala.lang.psi.api.base.types.{ScTypeElement, ScTypeArgs}
+import org.jetbrains.plugins.scala.lang.psi.types.ScType
+import org.jetbrains.plugins.scala.lang.psi.types.result.TypeResult
 
 /**
 * @author Alexander Podkhalyuzin
@@ -22,7 +25,6 @@ trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
       case _ => throw new RuntimeException("Wrong infix expression: " + getText)
     }
   }
-
 
   def rOp: ScExpression = {
     val exprs: Array[ScExpression] = findChildrenByClassScala(classOf[ScExpression])
@@ -45,6 +47,17 @@ trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
   def getInvokedExpr: ScExpression = operation
 
   def argsElement: PsiElement = getArgExpr
+
+  def typeArgs = findChild(classOf[ScTypeArgs])
+
+  def typeArguments : Seq[ScTypeElement] = (for (t <- typeArgs) yield t.typeArgs) match {
+    case Some(x) => x
+    case _ => Nil
+  }
+
+  def shapeMultiType: Array[TypeResult[ScType]]
+
+  def multiType: Array[TypeResult[ScType]]
 }
 
 object ScInfixExpr {

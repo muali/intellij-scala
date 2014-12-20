@@ -22,6 +22,7 @@ import org.jetbrains.plugins.scala.lang.psi.types._
 import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.Parameter
 import org.jetbrains.plugins.scala.lang.psi.types.result.TypingContext
 import org.jetbrains.plugins.scala.lang.resolve.ScalaResolveResult
+import org.jetbrains.plugins.scala.project.{ScalaLanguageLevel, ProjectPsiElementExt}
 
 /**
  * Pavel.Fatin, 31.05.2010
@@ -209,6 +210,16 @@ trait ApplicationAnnotator {
         holder.createErrorAnnotation(assignment.getLExpression, "Parameter specified multiple times")
       case ExpectedTypeMismatch => // it will be reported later
       case _ => holder.createErrorAnnotation(call.argsElement, "Not applicable")
+    }
+  }
+
+  def annotateInfixExpression(infix: ScInfixExpr, holder: AnnotationHolder): Unit = {
+    if (infix.typeArgs != None) {
+      infix.scalaLanguageLevel match {
+        case Some(version) if version < ScalaLanguageLevel.Scala_2_11 =>
+          holder.createErrorAnnotation(infix, "Type arguments is not allowed in infix expression")
+        case _ =>
+      }
     }
   }
 

@@ -7,6 +7,7 @@ package expressions
 import com.intellij.lang.PsiBuilder
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.parser.parsing.builder.ScalaPsiBuilder
+import org.jetbrains.plugins.scala.lang.parser.parsing.types.TypeArgs
 
 
 /**
@@ -16,7 +17,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.builder.ScalaPsiBuilder
 
 /*
  * InfixExpr ::= PrefixExpr
- *             | InfixExpr id [nl] InfixExpr
+ *             | InfixExpr id {nl} TypeArgs [nl] InfixExpr  //{nl} TypeArgs not in specs yet
  */
 
 object InfixExpr {
@@ -65,6 +66,7 @@ object InfixExpr {
       val opMarker = builder.mark
       builder.advanceLexer() //Ate id
       opMarker.done(ScalaElementTypes.REFERENCE_EXPRESSION)
+      TypeArgs.parse(builder, false)
       if (builder.twoNewlinesBeforeCurrentToken) {
         setMarker.rollbackTo()
         count = 0

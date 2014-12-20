@@ -10,7 +10,8 @@ import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.types._
-import org.jetbrains.plugins.scala.lang.psi.types.result.{TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.ScTypePolymorphicType
+import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypeResult, TypingContext}
 
 import scala.collection.Seq
 
@@ -30,6 +31,16 @@ class ScInfixExprImpl(node: ASTNode) extends ScalaPsiElementImpl(node) with ScIn
         case None => Seq(t)
       }
       case expr => Seq(expr)
+    }
+  }
+
+  private def convertReferencedType(typeResult: TypeResult[ScType]): TypeResult[ScType] = {
+    val refType = typeResult.getOrElse(return typeResult)
+    refType match {
+      case ScTypePolymorphicType(int, tps) =>
+        val subst = ScalaPsiUtil.genericCallSubstitutor(tps.map(p => (p.name, ScalaPsiUtil.getPsiElementId(p.ptp))), typeArguments)
+        Success(subst.subst(int), Some(this))
+      case _ => Success(refType, Some(this))
     }
   }
 
@@ -56,6 +67,16 @@ class ScInfixExprImpl(node: ASTNode) extends ScalaPsiElementImpl(node) with ScIn
         newExpr.getType(TypingContext.empty)
       case _ => super.innerType(ctx)
     }
+  }
+
+  def shapeMultiType: Array[TypeResult[ScType]] = {
+    val typeResult: Array[TypeResult[ScType]] = operation.shapeMultiType
+    typeResult.map(convertReferencedType)
+  }
+
+  def multiType: Array[TypeResult[ScType]] = {
+    val typeResult: Array[TypeResult[ScType]] = operation.multiType
+    typeResult.map(convertReferencedType)
   }
 
   override def accept(visitor: ScalaElementVisitor) {

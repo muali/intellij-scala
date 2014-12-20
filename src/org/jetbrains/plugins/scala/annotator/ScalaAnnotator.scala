@@ -226,7 +226,10 @@ class ScalaAnnotator extends Annotator with FunctionAnnotator with ScopeAnnotato
       }
 
       override def visitInfixExpression(infix: ScInfixExpr): Unit = {
-        if (typeAware) annotateMethodInvocation(infix, holder)
+        if (typeAware) {
+          annotateMethodInvocation(infix, holder)
+          annotateInfixExpression(infix, holder)
+        }
         super.visitInfixExpression(infix)
       }
 
