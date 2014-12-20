@@ -56,7 +56,7 @@ class ScInfixExprImpl(node: ASTNode) extends ScalaPsiElementImpl(node) with ScIn
 
     cacheBaseParts(this)
 
-    operation.bind() match {
+    val typeResult = operation.bind() match {
       //this is assignment statement: x += 1 equals to x = x + 1
       case Some(r) if r.element.name + "=" == operation.refName =>
         super.innerType(ctx)
@@ -67,6 +67,8 @@ class ScInfixExprImpl(node: ASTNode) extends ScalaPsiElementImpl(node) with ScIn
         newExpr.getType(TypingContext.empty)
       case _ => super.innerType(ctx)
     }
+    if (typeArgs == None) typeResult
+    else convertReferencedType(typeResult)
   }
 
   def shapeMultiType: Array[TypeResult[ScType]] = {
