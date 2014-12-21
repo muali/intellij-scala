@@ -17,7 +17,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.types.TypeArgs
 
 /*
  * InfixExpr ::= PrefixExpr
- *             | InfixExpr id {nl} TypeArgs [nl] InfixExpr  //{nl} TypeArgs not in specs yet
+ *             | InfixExpr id {nl} [TypeArgs] [nl] InfixExpr  //{nl} [TypeArgs] not in specs yet
  */
 
 object InfixExpr {
@@ -66,7 +66,11 @@ object InfixExpr {
       val opMarker = builder.mark
       builder.advanceLexer() //Ate id
       opMarker.done(ScalaElementTypes.REFERENCE_EXPRESSION)
-      TypeArgs.parse(builder, false)
+      if (builder.getTokenType == ScalaTokenTypes.tLSQBRACKET) {
+        TypeArgs.parse(builder, false)
+        val genMarker = opMarker.precede()
+        genMarker.done(ScalaElementTypes.GENERIC_OPERATOR)
+      }
       if (builder.twoNewlinesBeforeCurrentToken) {
         setMarker.rollbackTo()
         count = 0

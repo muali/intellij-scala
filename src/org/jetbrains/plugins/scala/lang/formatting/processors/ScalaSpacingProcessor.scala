@@ -1058,7 +1058,9 @@ object ScalaSpacingProcessor extends ScalaTokenTypes {
       case (_, ScalaTokenTypes.tIDENTIFIER, _, ScalaElementTypes.PARAM_TYPE) if rightString == "*" => NO_SPACING
       //Parameters
       case (ScalaTokenTypes.tIDENTIFIER, ScalaElementTypes.PARAM_CLAUSES, _, _) => NO_SPACING
-      case (_, ScalaElementTypes.TYPE_ARGS, _, (ScalaElementTypes.TYPE_GENERIC_CALL | ScalaElementTypes.GENERIC_CALL)) => NO_SPACING
+      case (_, ScalaElementTypes.TYPE_ARGS, _,
+      (ScalaElementTypes.TYPE_GENERIC_CALL | ScalaElementTypes.GENERIC_CALL
+              | ScalaElementTypes.GENERIC_OPERATOR)) => NO_SPACING
       case (_, ScalaElementTypes.PATTERN_ARGS, _, ScalaElementTypes.CONSTRUCTOR_PATTERN) => NO_SPACING
       //Annotation
       case (ScalaTokenTypes.tAT, _, _, _) if rightPsi.isInstanceOf[ScXmlPattern] => WITH_SPACING

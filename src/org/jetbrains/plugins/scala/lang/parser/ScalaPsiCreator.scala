@@ -181,6 +181,7 @@ object ScalaPsiCreator {
     case ScalaElementTypes.THIS_REFERENCE => new ScThisReferenceImpl(node)
     case ScalaElementTypes.SUPER_REFERENCE => new ScSuperReferenceImpl(node)
     case ScalaElementTypes.GENERIC_CALL => new ScGenericCallImpl(node)
+    case ScalaElementTypes.GENERIC_OPERATOR => new ScGenericOperatorImpl(node)
 
     case ScalaElementTypes.PREFIX_EXPR => new ScPrefixExprImpl(node)
     case ScalaElementTypes.PLACEHOLDER_EXPR => new ScUnderscoreSectionImpl(node)

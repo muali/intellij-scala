@@ -214,7 +214,7 @@ trait ApplicationAnnotator {
   }
 
   def annotateInfixExpression(infix: ScInfixExpr, holder: AnnotationHolder): Unit = {
-    if (infix.typeArgs != None) {
+    if (infix.getInvokedExpr.isInstanceOf[ScGenericOperator]) {
       infix.scalaLanguageLevel match {
         case Some(version) if version < ScalaLanguageLevel.Scala_2_11 =>
           holder.createErrorAnnotation(infix, "Type arguments is not allowed in infix expression")

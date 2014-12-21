@@ -96,7 +96,8 @@ object TokenSets {
           REFERENCE_EXPRESSION,
           THIS_REFERENCE,
           SUPER_REFERENCE,
-          GENERIC_CALL))
+          GENERIC_CALL,
+          GENERIC_OPERATOR))
 
   val SIMPLE_EXPR_BIT_SET = TokenSet.create(PLACEHOLDER_EXPR,
       LITERAL,

@@ -195,6 +195,7 @@ object ScalaElementTypes {
   val THIS_REFERENCE = new ScalaElementType("This reference")
   val SUPER_REFERENCE = new ScalaElementType("Super reference")
   val GENERIC_CALL = new ScalaElementType("Generified call")
+  val GENERIC_OPERATOR = new ScalaElementType("Generified operator")
 
   val EXPR1 = new ScalaElementType("composite expression ")
   val FUNCTION_EXPR = new ScalaElementType("expression")

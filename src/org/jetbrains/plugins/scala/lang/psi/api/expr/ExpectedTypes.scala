@@ -199,14 +199,14 @@ private[expr] object ExpectedTypes {
           case p: ScParenthesisedExpr => p.expr.getOrElse(return Array.empty)
           case _ => expr
         }
-        val op = infix.operation
-        var tps = infix.typeArgs match {
-          case Some(_) =>
-            if (!withResolvedFunction) mapResolves(op.shapeResolve, infix.shapeMultiType)
-            else mapResolves(op.multiResolve(false), infix.multiType)
-          case _ =>
-            if (!withResolvedFunction) mapResolves(op.shapeResolve, op.shapeMultiType)
-            else mapResolves(op.multiResolve(false), op.multiType)
+        val invoked = infix.getInvokedExpr
+        var tps = invoked match {
+          case gen : ScGenericOperator =>
+            if (!withResolvedFunction) mapResolves(gen.shapeResolve, gen.shapeMultiType)
+            else mapResolves(gen.multiResolve(false), gen.multiType)
+          case re : ScReferenceExpression =>
+            if (!withResolvedFunction) mapResolves(re.shapeResolve, re.shapeMultiType)
+            else mapResolves(re.multiResolve(false), re.multiType)
         }
 
         tps = tps.map { case (tp, isDynamicNamed) =>

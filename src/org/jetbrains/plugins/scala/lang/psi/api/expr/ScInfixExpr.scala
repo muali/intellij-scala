@@ -6,9 +6,6 @@ package expr
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.lang.parser.util.ParserUtils
-import org.jetbrains.plugins.scala.lang.psi.api.base.types.{ScTypeElement, ScTypeArgs}
-import org.jetbrains.plugins.scala.lang.psi.types.ScType
-import org.jetbrains.plugins.scala.lang.psi.types.result.TypeResult
 
 /**
 * @author Alexander Podkhalyuzin
@@ -17,13 +14,9 @@ import org.jetbrains.plugins.scala.lang.psi.types.result.TypeResult
 trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
   def lOp: ScExpression = findChildrenByClassScala(classOf[ScExpression]).apply(0)
 
-  def operation : ScReferenceExpression = {
-    val children = findChildrenByClassScala(classOf[ScExpression])
-    if (children.length < 2) throw new RuntimeException("Wrong infix expression: " + getText)
-    children.apply(1) match {
-      case re : ScReferenceExpression => re
-      case _ => throw new RuntimeException("Wrong infix expression: " + getText)
-    }
+  def operation : ScReferenceExpression = getInvokedExpr match {
+    case re : ScReferenceExpression => re
+    case gen : ScGenericOperator => gen.referencedExpr
   }
 
   def rOp: ScExpression = {
@@ -44,20 +37,18 @@ trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
 
   def isAssignmentOperator = ParserUtils.isAssignmentOperator(operation.getText)
 
-  def getInvokedExpr: ScExpression = operation
+  def getInvokedExpr: ScExpression = {
+    val children = findChildrenByClassScala(classOf[ScExpression])
+    if (children.length < 2) throw new RuntimeException("Wrong infix expression: " + getText)
+    children.apply(1) match {
+      case re : ScReferenceExpression => re
+      case gen : ScGenericOperator => gen
+      case _ => throw new RuntimeException("Wrong infix expression: " + getText)
+    }
+  }
 
   def argsElement: PsiElement = getArgExpr
 
-  def typeArgs = findChild(classOf[ScTypeArgs])
-
-  def typeArguments : Seq[ScTypeElement] = (for (t <- typeArgs) yield t.typeArgs) match {
-    case Some(x) => x
-    case _ => Nil
-  }
-
-  def shapeMultiType: Array[TypeResult[ScType]]
-
-  def multiType: Array[TypeResult[ScType]]
 }
 
 object ScInfixExpr {
