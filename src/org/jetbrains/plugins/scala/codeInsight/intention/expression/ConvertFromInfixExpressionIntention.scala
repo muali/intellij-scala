@@ -40,7 +40,11 @@ class ConvertFromInfixExpressionIntention extends PsiElementBaseIntentionAction 
     val diff = editor.getCaretModel.getOffset - infixExpr.operation.nameId.getTextRange.getStartOffset
 
     val methodCallExpr = ScalaPsiElementFactory.createEquivMethodCall(infixExpr)
-    val size = methodCallExpr.getInvokedExpr.asInstanceOf[ScReferenceExpression].nameId.getTextRange.getStartOffset -
+    val ref =  methodCallExpr.getInvokedExpr match {
+      case gen: ScGenericCall => gen.referencedExpr.asInstanceOf[ScReferenceExpression]
+      case re: ScReferenceExpression => re
+    }
+    val size = ref.nameId.getTextRange.getStartOffset -
        methodCallExpr.getTextRange.getStartOffset
 
     inWriteAction {

@@ -30,11 +30,12 @@ class ConvertToInfixExpressionIntention extends PsiElementBaseIntentionAction {
     if (!IntentionAvailabilityChecker.checkIntention(this, element)) return false
     val methodCallExpr : ScMethodCall = PsiTreeUtil.getParentOfType(element, classOf[ScMethodCall], false)
     if (methodCallExpr == null) return false
-    if (!methodCallExpr.getInvokedExpr.isInstanceOf[ScReferenceExpression]) return false
-    val range: TextRange = ((methodCallExpr.getInvokedExpr).asInstanceOf[ScReferenceExpression]).nameId.getTextRange
+    val ref = getReferenceExpr(methodCallExpr)
+    if (ref.isEmpty) return false
+    val range: TextRange = ref.get.nameId.getTextRange
     val offset = editor.getCaretModel.getOffset
     if (!(range.getStartOffset <= offset && offset <= range.getEndOffset)) return false
-    if (((methodCallExpr.getInvokedExpr).asInstanceOf[ScReferenceExpression]).isQualified) return true
+    if (ref.get.isQualified) return true
     false
   }
 
@@ -43,23 +44,31 @@ class ConvertToInfixExpressionIntention extends PsiElementBaseIntentionAction {
     if (methodCallExpr == null || !methodCallExpr.isValid) return
 
     val start = methodCallExpr.getTextRange.getStartOffset
+    val ref = getReferenceExpr(methodCallExpr).get
     val diff = editor.getCaretModel.getOffset -
-            ((methodCallExpr.getInvokedExpr).asInstanceOf[ScReferenceExpression]).nameId.getTextRange.getStartOffset
+            ref.nameId.getTextRange.getStartOffset
 
     var putArgsFirst = false
     val argsBuilder = new StringBuilder
     val invokedExprBuilder = new StringBuilder
 
-    val qual = methodCallExpr.getInvokedExpr.asInstanceOf[ScReferenceExpression].qualifier.get
-    val oper = ((methodCallExpr.getInvokedExpr).asInstanceOf[ScReferenceExpression]).nameId
-    val invokedExprText = methodCallExpr.getInvokedExpr.getText
+    val qual = ref.qualifier.get
+    val oper = ref.nameId
+    val refText = ref.getText
     val methodCallArgs = methodCallExpr.args
+    val typeArgsText = methodCallExpr.getInvokedExpr match {
+      case gen: ScGenericCall => {
+        if (gen.typeArgs.isEmpty) ""
+        else gen.typeArgs.get.getText
+      }
+      case _ => ""
+    }
 
-    if (invokedExprText.last == ':') {
+    if (refText.last == ':') {
       putArgsFirst = true
-      invokedExprBuilder.append(oper.getText).append(" ").append(qual.getText)
+      invokedExprBuilder.append(oper.getText).append(typeArgsText).append(" ").append(qual.getText)
     } else {
-      invokedExprBuilder.append(qual.getText).append(" ").append(oper.getText)
+      invokedExprBuilder.append(qual.getText).append(" ").append(oper.getText).append(typeArgsText)
     }
 
     argsBuilder.append(methodCallArgs.getText)
@@ -98,4 +107,12 @@ class ConvertToInfixExpressionIntention extends PsiElementBaseIntentionAction {
     }
   }
 
+  private def getReferenceExpr(call: ScMethodCall) : Option[ScReferenceExpression] = call.getInvokedExpr match {
+    case re: ScReferenceExpression => Some(re)
+    case gen: ScGenericCall => gen.referencedExpr match {
+      case re: ScReferenceExpression => Some(re)
+      case _ => None
+    }
+    case _ => None
+  }
 }

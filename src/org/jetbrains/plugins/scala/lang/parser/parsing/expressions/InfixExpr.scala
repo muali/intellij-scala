@@ -17,7 +17,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.types.TypeArgs
 
 /*
  * InfixExpr ::= PrefixExpr
- *             | InfixExpr id {nl} [TypeArgs] [nl] InfixExpr  //{nl} [TypeArgs] not in specs yet
+ *             | InfixExpr id [{nl} TypeArgs] [nl] InfixExpr  //[{nl} TypeArgs] not in specs yet
  */
 
 object InfixExpr {
